@@ -1,0 +1,1 @@
+Explain what a module does by looking at its README, straight from your terminal
