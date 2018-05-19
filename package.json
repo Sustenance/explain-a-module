@@ -1,17 +1,30 @@
 {
   "name": "explain-a-module",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Retrieve and view the README for a node module in the terminal",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Sustenance",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sustenance/explain-a-module.git"
+  },
+  "keywords": [
+    "description",
+    "documentation",
+    "README",
+    "productivity"
+  ],
   "license": "MIT",
   "bin": {
-  	"eam": "./index.js"
+    "eam": "./index.js"
   },
   "dependencies": {
-    "commander": "^2.15.1"
+    "commander": "^2.15.1",
+    "global-paths": "^1.0.0",
+    "marked": "^0.3.19",
+    "marked-terminal": "^2.0.0"
   }
 }
