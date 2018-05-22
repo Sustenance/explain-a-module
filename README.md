@@ -10,9 +10,13 @@
 
 ## Usage
 
+### Search the current directory
+
 `eam <module-name>`
 
-If your current directory has a `node_modules` folder, it will also search the first level of its contents.
+### Search the local npm cache
+
+`eam -g <module-name>`
 
 ## Contribute
 
