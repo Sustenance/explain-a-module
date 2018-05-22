@@ -3,9 +3,9 @@
 const program = require("commander");
 const marked = require("marked");
 const TerminalRenderer = require("marked-terminal");
-const globalPaths = require("global-paths");
+const npmRoot = require("npm-root");
+const glob = require("glob");
 
-const path = require("path");
 const fs = require("fs");
 
 marked.setOptions({
@@ -14,9 +14,11 @@ marked.setOptions({
 
 program
 	.version("1.0.0")
+	.usage("[options] <module_name>")
+	.option("-g, --global", "Search global cache")
 	.arguments("<module>")
-	.action((module) => {
-		checkLocalMachine(module)
+	.action((module, cmd) => {
+		checkLocalMachine(module, !!cmd.global)
 			.then((modulePath) => {
 				if (modulePath) {
 					return readFileFromDisk(modulePath);
@@ -33,22 +35,35 @@ program
 	})
 	.parse(process.argv);
 
-function checkLocalMachine(module) {
-	const pathsPromiseArray = globalPaths().map((possiblePath) => {
-		possiblePath = path.join(possiblePath, "README.md");
-		return new Promise((resolve, reject) => {
-			fs.access(possiblePath, fs.constants.F_OK | fs.constants.R_OK, (err) => {
-				resolve(!err ? possiblePath : null);
-			});
-		});
-	});
+function checkLocalMachine(module, searchGlobal) {
+	const pathsPromiseArray = [];
 
 	pathsPromiseArray.push(new Promise((resolve, reject) => {
-		const localPath = path.join(".", "node_modules", module, "README.md");
-		fs.access(localPath, fs.constants.F_OK | fs.constants.R_OK, (err) => {
-			resolve(!err ? localPath : null);
-		});
+		glob(`node_modules/**/${module}/[rR][eE][aA][dD][mM][eE].[mM][dD]`, (globErr, files) => {
+			if (!globErr && files && files.length > 0) {
+				resolve(files[0]);
+			} else {
+				resolve(null);
+			}
+		})
 	}));
+
+	if (searchGlobal) {
+		// glob search the npm globule modules directory
+		pathsPromiseArray.push(new Promise((resolve, reject) => {
+			npmRoot({global: true}, (rootErr, globalPath) => {
+				if (!rootErr && globalPath) {
+					glob(`${globalPath}/**/${module}/[rR][eE][aA][dD][mM][eE].[mM][dD]`, (globErr, files) => {
+						if (!globErr && files && files.length > 0) {
+							resolve(files[0]);
+						} else {
+							resolve(null);
+						}
+					});
+				}
+			});
+		}));
+	}
 
 	return Promise.all(pathsPromiseArray).then((pathsResults) => {
 			return pathsResults.find((possiblePath) => !!possiblePath);
